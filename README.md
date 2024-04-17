@@ -124,7 +124,7 @@ docker run --rm -it --platform linux/arm64 --privileged \
 sudo unzstd /tmp/output/nixos.img.zst && sudo rm /tmp/output/nixos.img.zst
 ```
 
-Note: this will update and populate your `flake.lock` file but the permissions may be wrong. You can use `sudo chown $USER:$USER flake.lock` to fix this and then make sure to commit the change so your systems don't complain about being unable to write the lockfile
+Note: this will update and populate your `flake.lock` file but the permissions may be wrong. You can use `sudo chown -R $USER:$USER .` to fix this and then make sure to commit the change so your systems don't complain about being unable to write the lockfile
 
 #### Enable cross-architecture builds
 
