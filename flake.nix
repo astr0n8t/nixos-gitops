@@ -2,7 +2,7 @@
   description = "a simple function provider to build attrsets for nixos-generators and nixos";
   outputs = { self, ... }:
   {
-    self = {
+    {
   	  buildNixOSGenerator = (node: let
 		    config = {
           system = node.platform ? "x86_64-linux";
