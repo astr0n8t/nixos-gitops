@@ -24,7 +24,7 @@
 	);
 	buildNixOSConfig = (
 	node: let
-		node.modules = [ (import ${self}/formats/${node.format}.nix) ];
+		node.modules = [ node.bootloader-module ];
 		config = self.buildNixOSGenerator(node);
 	in
 		config
