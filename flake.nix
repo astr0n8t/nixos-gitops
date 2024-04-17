@@ -23,5 +23,5 @@
 		config = self.buildNixOSGenerator(node);
 	in
 		config);
-  }
+  };
 }
