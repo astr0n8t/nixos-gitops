@@ -30,7 +30,7 @@
 			system = generated.system;
 			modules = generated.modules;
 			specialArgs = generated.specialArgs;
-		}
+		};
 	in
 		config
 	);
