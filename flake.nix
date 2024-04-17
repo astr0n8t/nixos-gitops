@@ -2,24 +2,32 @@
   description = "a simple function provider to build attrsets for nixos-generators and nixos";
   outputs = { self, ... }:
   {
-	buildNixOSGenerator = (node: let
+	buildNixOSGenerator = ({
+		name ? "nixos",
+		platform ? "x86-64_linux",
+		format ? "raw-efi",
+		modules ? [],
+		nixpkgs ? null,
+	}: let
 		config = {
-			system = node.platform;
-			format = node.format;
-			modules = node.modules;
+			system = platform;
+			format = format;
+			modules = modules;
 			specialArgs = {
 				self = self;
-				nodeHostName = node.name;
-				nixpkgs = node.nixpkgs;
+				nodeHostName = name;
+				nixpkgs = nixpkgs;
 			};
 		};
 	in
-		config);
-	buildNixOSConfig = (node: let
-		format = node.format;
-		node.modules = [ ./formats/${format}.nix ];
+		config
+	);
+	buildNixOSConfig = (
+	node: let
 		config = self.buildNixOSGenerator(node);
+		config.modules = [ ./formats/${config.format}.nix ];
 	in
-		config);
+		config
+	);
   };
 }
