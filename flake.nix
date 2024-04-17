@@ -26,6 +26,7 @@
 	node: let
 		node.modules = [ ./formats/${node.format}.nix ];
 		config = self.buildNixOSGenerator(node);
+		config.format = null;
 	in
 		config
 	);
