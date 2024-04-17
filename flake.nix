@@ -4,19 +4,19 @@
   {
 	buildNixOSGenerator = (node: let
 		config = {
-			system = node.platform ? "x86_64-linux";
-			format = node.format ? "raw-efi";
-			modules = node.modules ? null;
+			system = node.platform;
+			format = node.format;
+			modules = node.modules;
 			specialArgs = {
 				self = self;
-				nodeHostName = node.name ? "nixos";
-				nixpkgs = node.nixpkgs ? null;
+				nodeHostName = node.name;
+				nixpkgs = node.nixpkgs;
 			};
 		};
 	in
 		config);
 	buildNixOSConfig = (node: let
-		format = node.format ? "raw-efi";
+		format = node.format;
 		node.modules = [ ./formats/${format}.nix ];
 		config = self.buildNixOSGenerator(node);
 	in
