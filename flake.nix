@@ -24,7 +24,7 @@
 	);
 	buildNixOSConfig = (
 	node: let
-		node.modules = [ "${self}/formats/${node.format}.nix" ];
+		node.modules = [ "${nixos-gitops}/formats/${node.format}.nix" ];
 		config = self.buildNixOSGenerator(node);
 	in
 		config
