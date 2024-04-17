@@ -164,7 +164,7 @@ If you want to add auto-upgrades tracking your git repo, add the following to a 
     flake = "github:<user>/<repo>#${nodeHostName}";  
     flags = [
       "-L" # print build logs
-      "--refresh" # print build logs
+      "--refresh" # update the repository
     ];
   };
 ```
