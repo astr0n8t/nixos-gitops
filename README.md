@@ -1,27 +1,29 @@
 # nixos-gitops
 
+a flake that unifies nixos-generators and nixos flake configurations
+
 ## What is this?
 
-Wouldn't it be great if you could have your NixOS config work like k8s [fluxcd](https://fluxcd.io/)?  That's certainly what I thought.  I was disappointed when I got started with NixOS though because it didn't seem like such a thing was possible. Most of the guides I found just told you to install the OS using the normal installer and go from there.  That isn't what I wanted.
+Wouldn't it be great if you could have your NixOS config work like k8s [fluxcd](https://fluxcd.io/)?  That's certainly what I thought.  I was disappointed when I got started with NixOS because it didn't seem like it was possible. Most of the guides I found said to install the OS using the normal installer and go from there.  That isn't what I wanted.
 
-I wanted a way to create a configuration for a machine, run a build command on a machine, create a disk image that I could write directly to the storage, and then have that machine boot from it.  Then on top of this, anytime I made a change to the git repo that held the configuration, the machine would apply that configuration without me having to do anything (hence gitops).
+I wanted a way to create a configuration for a machine, run a build command on a machine, create a disk image, and then have that machine boot from it.  And anytime I made a change to the git repo that held the configuration, the machine would apply that configuration (hence gitops).
 
-It turns out, you can totally do this, but also it's not straight forward on how to do this.  So I created this flake to kind of act like a little bit of glue to piece this together.
+It turns out, it is possible with some work.  So I created this flake to act as glue to piece this together.
 
 ## How does it work?
 
-Basically, we need to use [nixos-generators](https://github.com/nix-community/nixos-generators/) to build our image.  And that is 90% of what we need to do, but unfortunately, this results in an image that cannot rebuild based on the original input.  Thanks to [this user's comment](https://github.com/nix-community/nixos-generators/issues/193#issuecomment-1937095713) (thanks [@JustinLex](https://github.com/JustinLex)!) the missing piece actually has to do with how the bootloader and partitions are configured.  So basically by taking Justin's method, we can create functions that generate the right config using the right modules when necessary.
+To build your image, use [nixos-generators](https://github.com/nix-community/nixos-generators/).  And that is 90% of what you need to do, but unfortunately, this results in an image that cannot do a nixos-rebuild based on the original flake.  Thanks to [this user's comment](https://github.com/nix-community/nixos-generators/issues/193#issuecomment-1937095713) (thanks [@JustinLex](https://github.com/JustinLex)!) the missing piece has to do with how the bootloader and partitions are configured.  So by taking Justin's method, I created functions that generate the right attrset using the right modules.
 
 ### Supported Formats
 
-Part of this project is taking files from nixos-generators and slightly modifying them to work.  At the moment only these formats are supported but other's should be easy enough to add as well:
+Part of this project is taking files from nixos-generators and slightly modifying them to work.  At the moment only these formats are supported but other's should be able to be added as well:
 
 - raw-efi
 - sd-aarch64
 
 ## Show me the code
 
-If you want to create your own image, basically just create a new flake in a git repository with this code:
+If you want to create your own image, create a new flake with this code:
 ```nix
 {
   inputs = {
@@ -99,7 +101,9 @@ If you want to create your own image, basically just create a new flake in a git
 
 ## Building
 
-Now to actually build, if you have Docker handy just do:
+### Docker
+
+To build, if you have Docker handy just do:
 ```bash
 # for x86_64
 docker run --rm -it --platform linux/amd64 --privileged \
@@ -120,14 +124,9 @@ docker run --rm -it --platform linux/arm64 --privileged \
 sudo unzstd /tmp/output/nixos.img.zst && sudo rm /tmp/output/nixos.img.zst
 ```
 
-And then your disk image will be located at `/tmp/output/nixos.img`
+Note: this will update and populate your `flake.lock` file but the permissions may be wrong. You can use `sudo chown $USER:$USER flake.lock` to fix this and then make sure to commit the change so your systems don't complain about being unable to write the lockfile
 
-You can then just write this to a disk and boot the machine from it:
-```
-sudo dd if=/tmp/output/nixos.img of=/dev/your/disk/here
-```
-
-### Enable cross-architecture builds
+#### Enable cross-architecture builds
 
 If you need to build for a system that has a different architecture just do the following:
 ```
@@ -135,11 +134,28 @@ sudo apt install qemu binfmt-support qemu-user-static
 docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 ```
 
-And then you should be good to go.
+### nix
+
+This should be as simple as:
+```
+nix build .#generic-x86-node
+cp -L result/nixos.img /output/nixos.img'
+```
+
+Note: I don't actually have nix installed on my host OS yet hence the docker.
+
+### Writing the image
+
+And then your disk image will be located at `/tmp/output/nixos.img`
+
+You can then just write this to a disk and boot the machine from it:
+```
+sudo dd if=/tmp/output/nixos.img of=/dev/your/disk/here
+```
 
 ## GitOps
 
-If you want to add auto-upgrades tracking your git repo, add the following:
+If you want to add auto-upgrades tracking your git repo, add the following to a module in your machine configuration:
 ```nix
   system.autoUpgrade = {
     enable = true;
@@ -153,11 +169,9 @@ If you want to add auto-upgrades tracking your git repo, add the following:
   };
 ```
 
-Note: keep in mind if your repo is private you need to give nix access to a GitHub access token
-
 ### Enabling Renovate flake.lock updates
 
-Another cool thing about this is that you can have mend renovate keep your systems up to date.
+Another thing with this setup is that you can have [Mend Renovate](https://www.mend.io/renovate/) keep your systems up to date.
 
 Enable the app on GitHub marketplace [here](https://github.com/marketplace/renovate) for your repository.
 
@@ -184,7 +198,7 @@ Now you should get a pull request every week with updates to your flake.lock fil
 
 ### Too Many System Architectures
 
-If for some reason you find yourself with more system architectures and your flake.nix is becoming filled with packages.system-name combined with the filter call, I wrote a recursive lambda to just fix the attrset. 
+If for some reason you find yourself with more system architectures and your flake.nix is becoming filled with packages.system-name combined with the filter call, I wrote a recursive lambda to give a unified attrset. 
 
 I'll warn you, this was a pain to program and probably a pain to debug so use at your own risk:
 ```nix
@@ -240,7 +254,7 @@ sudo nixos-rebuild switch -L --refresh --flake github:<user>/<repo>#
 
 ### Mounting the disk image
 
-Now a cool part about this is that you can mount the disk image after you've built it.  At that point you can add things to the system that maybe you don't want in your nix config or whatever you might want.
+Now you can technically mount the disk image after you've built it to add things to the system that maybe you don't want in your nix config or whatever you might want.
 
 Here's how:
 ```
@@ -252,7 +266,7 @@ sudo mount "$LOOP_DEV"p2 /tmp/fs
 And then the image is mounted at `/tmp/fs` 
 Unfortunately, a normal chroot won't exactly work here but you can still do whatever you need.
 
-And then when you're done umount like so:
+And then when you're done umount:
 ```
 sudo umount /tmp/fs
 sudo losetup -d $LOOP_DEV
@@ -260,6 +274,11 @@ sudo losetup -d $LOOP_DEV
 
 ### Adding more disk formats
 
-This one is kinda tricky because it depends on the partition format that nixos-generators creates.  Basically go [here](https://github.com/nix-community/nixos-generators/tree/master/formats) and copy the respective format file into the `formats` folder in this flake.  Then you'll want to figure out the filesystems and the bootloader.  This can be a bit tricky as sometimes its contained in more than one file.  For instance, `raw-efi` is defined in both `raw-efi.nix` and `raw.nix`.  
+This one is kinda tricky because it depends on the partition format that nixos-generators creates.  Basically go [here](https://github.com/nix-community/nixos-generators/tree/master/formats) and copy the respective format file into the `formats` folder in this flake.  Then you'll want to figure out the filesystems and the bootloader.  Note that sometimes its contained in more than one file.  For instance, `raw-efi` is defined in both `raw-efi.nix` and `raw.nix`.  
 
-But once you get that down it should just work as this flake just uses the `format` key of the attrset to choose the filename.
+But once you add it, it should just work as this flake just uses the `format` key of the attrset to choose the filename.
+
+### Using different nixpkgs for different nodes
+
+Because of the way I built the functions, you can actually have nodes that use different nixpkg versions.  Just add the other nixpkgs to your inputs and imports on the outputs and then set the `nixpkgs` key to point to that import.
+
