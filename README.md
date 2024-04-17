@@ -272,7 +272,7 @@ sudo umount /tmp/fs
 sudo losetup -d $LOOP_DEV
 ```
 
-### Adding more disk formats
+### Adding more image formats
 
 This one is kinda tricky because it depends on the partition format that nixos-generators creates.  Basically go [here](https://github.com/nix-community/nixos-generators/tree/master/formats) and copy the respective format file into the `formats` folder in this flake.  Then you'll want to figure out the filesystems and the bootloader.  Note that sometimes its contained in more than one file.  For instance, `raw-efi` is defined in both `raw-efi.nix` and `raw.nix`.  
 
