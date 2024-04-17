@@ -1,8 +1,6 @@
 {
   description = "a simple function provider to build attrsets for nixos-generators and nixos";
-  outputs = { self, ... }: let 
-	self = self;
-  in
+  outputs = { self, ... }:
   {
 	buildNixOSGenerator = (node: let
 		config = {
