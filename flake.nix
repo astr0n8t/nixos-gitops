@@ -4,7 +4,7 @@
   {
 	buildNixOSGenerator = ({
 		name ? "nixos",
-		system ? "x86-64_linux",
+		system ? "x86_64-linux",
 		format ? "raw-efi",
 		modules ? [],
 		nixpkgs ? null,
