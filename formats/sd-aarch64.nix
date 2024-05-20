@@ -19,8 +19,12 @@
 
   # see here https://nix.dev/tutorials/nixos/installing-nixos-on-a-raspberry-pi.html
   boot = {
-    kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
-    initrd.availableKernelModules = [ "xhci_pci" "usbhid" "usb_storage" ];
+    initrd.availableKernelModules = [ 
+      "xhci_pci" 
+      "usbhid" 
+      "usb_storage" 
+      "uas"
+    ];
     kernelParams = [
       "cgroup_enable=cpuset" "cgroup_memory=1" "cgroup_enable=memory"
     ];
