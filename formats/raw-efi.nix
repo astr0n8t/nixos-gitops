@@ -16,7 +16,6 @@
   };
   boot = {
     growPartition = true;
-    kernelParams = ["console=ttyS0"];
     loader.grub = {
       device = "nodev";
       efiSupport = true;
