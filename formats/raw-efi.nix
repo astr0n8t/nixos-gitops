@@ -24,8 +24,6 @@
     loader.timeout = 5;
     initrd.availableKernelModules = [
       "uas"
-      "nvme"
-      "ahci"
     ];
   };
 }
