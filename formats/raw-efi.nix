@@ -21,7 +21,7 @@
       efiSupport = true;
       efiInstallAsRemovable = true;
     };
-    loader.timeout = 0;
+    loader.timeout = 5;
     initrd.availableKernelModules = [
       "uas"
       "nvme"

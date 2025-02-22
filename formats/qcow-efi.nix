@@ -23,7 +23,7 @@
 
     boot.loader.grub.efiSupport = true;
     boot.loader.grub.efiInstallAsRemovable = true;
-    boot.loader.timeout = 0;
+    boot.loader.timeout = 5;
 
   };
 }
