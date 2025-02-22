@@ -22,6 +22,10 @@
       efiInstallAsRemovable = true;
     };
     loader.timeout = 0;
-    initrd.availableKernelModules = ["uas"];
+    initrd.availableKernelModules = [
+      "uas"
+      "nvme"
+      "ahci"
+    ];
   };
 }
